@@ -30,8 +30,6 @@ namespace AnthropometricMeasure
                 string json = r.ReadToEnd();
                 List<BodyPoints> items = JsonConvert.DeserializeObject<List<BodyPoints>>(json);
 
-               
-
                 BodyDistances bodyDistances = new BodyDistances();
 
                 RatioAlgo ratioAlgo = new RatioAlgo();
