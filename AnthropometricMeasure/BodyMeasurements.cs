@@ -10,8 +10,8 @@ namespace AnthropometricMeasure
     public class BodyMeasurements
     {
 
-
-        static double[][] MatrixCreate(int rows, int cols)
+   
+       public double[][] MatrixCreate(int rows, int cols)
         {
             double[][] result = new double[rows][];
             for (int i = 0; i < rows; ++i)
@@ -19,7 +19,7 @@ namespace AnthropometricMeasure
             return result;
         }
 
-        static double[][] MatrixIdentity(int n)
+        public double[][] MatrixIdentity(int n)
         {
             // return an n x n Identity matrix
             double[][] result = MatrixCreate(n, n);
@@ -29,7 +29,7 @@ namespace AnthropometricMeasure
             return result;
         }
 
-        static double[][] MatrixProduct(double[][] matrixA, double[][] matrixB)
+        public double[][] MatrixProduct(double[][] matrixA, double[][] matrixB)
         {
             int aRows = matrixA.Length; int aCols = matrixA[0].Length;
             int bRows = matrixB.Length; int bCols = matrixB[0].Length;
@@ -46,7 +46,7 @@ namespace AnthropometricMeasure
             return result;
         }
 
-        static double[][] MatrixInverse(double[][] matrix)
+       public double[][] MatrixInverse(double[][] matrix)
         {
             int n = matrix.Length;
             double[][] result = MatrixDuplicate(matrix);
@@ -77,7 +77,7 @@ namespace AnthropometricMeasure
             return result;
         }
 
-        static double[][] MatrixDuplicate(double[][] matrix)
+        public double[][] MatrixDuplicate(double[][] matrix)
         {
             // allocates/creates a duplicate of a matrix.
             double[][] result = MatrixCreate(matrix.Length, matrix[0].Length);
@@ -87,7 +87,7 @@ namespace AnthropometricMeasure
             return result;
         }
 
-        static double[] HelperSolve(double[][] luMatrix, double[] b)
+        public double[] HelperSolve(double[][] luMatrix, double[] b)
         {
             // before calling this helper, permute b using the perm array
             // from MatrixDecompose that generated luMatrix
@@ -114,7 +114,7 @@ namespace AnthropometricMeasure
 
             return x;
         }
-        static double[][] MatrixDecompose(double[][] matrix, out int[] perm, out int toggle)
+       public double[][] MatrixDecompose(double[][] matrix, out int[] perm, out int toggle)
         {
             // Doolittle LUP decomposition with partial pivoting.
             // rerturns: result is L (with 1s on diagonal) and U;

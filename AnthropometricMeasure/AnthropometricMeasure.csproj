@@ -176,6 +176,7 @@
     <Compile Include="JsonRead.cs" />
     <Compile Include="MeasurementModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RatioAlgo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
