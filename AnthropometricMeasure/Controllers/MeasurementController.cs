@@ -11,12 +11,15 @@ namespace AnthropometricMeasure.Controllers
     {
 
         MeasurementModel measurementModel = new MeasurementModel();
-
+        JsonRead jsonread = new JsonRead();
+        
         public IHttpActionResult GetMeasurement() {
             if (measurementModel == null)
             {
                 return NotFound();
             }
+
+            measurementModel = jsonread.LoadJson();
             return Ok(measurementModel);
 
         }

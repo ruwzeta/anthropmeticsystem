@@ -162,14 +162,15 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="BodyDistances.cs" />
-    <Compile Include="BodyMeasurements.cs" />
+    <Compile Include="DistanceAlgo.cs" />
+    <Compile Include="MatrixCal.cs" />
     <Compile Include="BodyPoints.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ImageUpload2Controller.cs" />
     <Compile Include="Controllers\ImageUploadController.cs" />
     <Compile Include="Controllers\MeasurementController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
-    <Compile Include="DllImportAttribute.cs" />
+    <Compile Include="DllImport.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

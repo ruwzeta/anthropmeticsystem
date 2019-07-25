@@ -34,6 +34,9 @@ namespace AnthropometricMeasure.Controllers
                 {
                     Trace.WriteLine(file.Headers.ContentDisposition.FileName);
                     Trace.WriteLine("Server file path: " + file.LocalFileName);
+                     
+
+
                 }
                 return Request.CreateResponse(HttpStatusCode.OK);
             }
