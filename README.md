@@ -38,3 +38,40 @@ To improve the robustness and maintainability of this project, adding automated 
     *   Test with `jsonPath` values that are invalid (e.g., outside the allowed directory, non-existent file).
 
 Consider using a testing framework like MSTest, NUnit, or xUnit for implementing these tests.
+
+## Configuration
+
+The application uses settings in the `Web.config` file's `<appSettings>` section for key configurations:
+
+### Image Processing and Upload (`ImageUploadController`)
+
+*   **`OpenPoseExePath`**:
+    *   **Purpose**: Specifies the full path to the OpenPose executable (e.g., `OpenPoseDemo.exe` or similar). This is used to process the uploaded images.
+    *   **Example**: `<add key="OpenPoseExePath" value="C:\Program Files\OpenPose\bin\OpenPoseDemo.exe" />`
+    *   **Note**: The application will return a server error if this path is not configured or is invalid. The actual OpenPose execution is currently simulated in the code.
+
+*   **`AllowedUploadExtensions`**:
+    *   **Purpose**: A comma-separated list of allowed file extensions for image uploads.
+    *   **Example**: `<add key="AllowedUploadExtensions" value=".jpg,.jpeg,.png,.bmp,.gif" />`
+    *   **Default (if not set or invalid)**: `.jpg,.jpeg,.png`
+
+*   **`MaxUploadFileSizeInBytes`**:
+    *   **Purpose**: The maximum allowed file size for uploads, specified in bytes.
+    *   **Example**: `<add key="MaxUploadFileSizeInBytes" value="10485760" />` (for 10 MB)
+    *   **Default (if not set or invalid)**: `10485760` (10 MB)
+
+### Measurement Calibration (`RatioAlgo`)
+
+These settings are critical for the `RatioAlgo` to calculate final measurements. The application will throw a configuration error on startup if these are missing or malformed.
+
+*   **`RatioAlgo.Lambda`**:
+    *   **Purpose**: The regularization parameter (lambda) used in the matrix calculations.
+    *   **Example**: `<add key="RatioAlgo.Lambda" value="0.50" />`
+
+*   **`RatioAlgo.MatrixX`**:
+    *   **Purpose**: A comma-separated string of 7 double values representing the 'matrixx' calibration vector.
+    *   **Example**: `<add key="RatioAlgo.MatrixX" value="72.597,61.504,56.222,115.277,45.382,89.17,72.683" />`
+
+*   **`RatioAlgo.MatrixY`**:
+    *   **Purpose**: A comma-separated string of 7 double values representing the 'matrixy' calibration vector.
+    *   **Example**: `<add key="RatioAlgo.MatrixY" value="44,33,27,63,23,51,45" />`

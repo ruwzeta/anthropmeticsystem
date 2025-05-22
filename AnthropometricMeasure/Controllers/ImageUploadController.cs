@@ -15,14 +15,45 @@ namespace AnthropometricMeasure.Controllers
 {
     public class ImageUploadController : ApiController
     {
-        private static readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
-        private const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
+        // Removed hardcoded _allowedExtensions and MaxFileSize
 
         public async Task<HttpResponseMessage> PostFormData()
         {
+            // Read configuration values
+            string openPoseExePath = ConfigurationManager.AppSettings["OpenPoseExePath"];
+            if (string.IsNullOrWhiteSpace(openPoseExePath))
+            {
+                Trace.TraceError("OpenPoseExePath is not configured in Web.config.");
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Server configuration error: OpenPose path not set.");
+            }
+
+            string extensionsString = ConfigurationManager.AppSettings["AllowedUploadExtensions"];
+            string[] allowedExtensions;
+            if (string.IsNullOrWhiteSpace(extensionsString))
+            {
+                allowedExtensions = new[] { ".jpg", ".jpeg", ".png" }; // Default values
+                Trace.TraceWarning("AllowedUploadExtensions not configured in Web.config or is empty. Using default extensions: " + string.Join(",", allowedExtensions));
+            }
+            else
+            {
+                allowedExtensions = extensionsString.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                                  .Select(ext => ext.Trim().ToLowerInvariant()) // Ensure trimmed and lower case
+                                                  .ToArray();
+            }
+            
+            string maxFileSizeString = ConfigurationManager.AppSettings["MaxUploadFileSizeInBytes"];
+            long maxFileSize; // Renamed from MaxFileSize to avoid conflict if it were a const
+            if (string.IsNullOrWhiteSpace(maxFileSizeString) || !long.TryParse(maxFileSizeString, out maxFileSize))
+            {
+                maxFileSize = 10 * 1024 * 1024; // Default to 10MB
+                Trace.TraceWarning($"MaxUploadFileSizeInBytes not configured correctly in Web.config or is invalid. Using default value: {maxFileSize} bytes.");
+            }
+
             // Check if the request contains multipart/form-data.
             if (!Request.Content.IsMimeMultipartContent())
             {
+                // This is a client error, so no server-side file to clean up.
+                Trace.TraceWarning("Request does not contain multipart/form-data.");
                 throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
             }
 
@@ -45,27 +76,24 @@ namespace AnthropometricMeasure.Controllers
 
                     // File Type Validation
                     var extension = Path.GetExtension(originalFileName)?.ToLowerInvariant();
-                    if (string.IsNullOrEmpty(extension) || !_allowedExtensions.Contains(extension))
+                    if (string.IsNullOrEmpty(extension) || !allowedExtensions.Contains(extension))
                     {
-                        Trace.TraceWarning($"File upload blocked for {originalFileName} due to invalid extension: {extension}. Temporary file: {uploadedFilePath}");
+                        Trace.TraceWarning($"File upload blocked for {originalFileName} due to invalid extension: {extension}. Allowed: {string.Join(", ", allowedExtensions)}. Temporary file: {uploadedFilePath}");
                         File.Delete(uploadedFilePath); // Clean up the invalid file
-                        return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Invalid file type. Allowed extensions are: {string.Join(", ", _allowedExtensions)}");
+                        return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Invalid file type. Allowed extensions are: {string.Join(", ", allowedExtensions)}");
                     }
 
                     // File Size Validation
                     var fileInfo = new FileInfo(uploadedFilePath);
-                    if (fileInfo.Length > MaxFileSize)
+                    if (fileInfo.Length > maxFileSize)
                     {
-                        Trace.TraceWarning($"File upload blocked for {originalFileName} due to excessive size: {fileInfo.Length} bytes. Max allowed: {MaxFileSize} bytes. Temporary file: {uploadedFilePath}");
+                        Trace.TraceWarning($"File upload blocked for {originalFileName} due to excessive size: {fileInfo.Length} bytes. Max allowed: {maxFileSize} bytes. Temporary file: {uploadedFilePath}");
                         File.Delete(uploadedFilePath); // Clean up the large file
-                        return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"File size exceeds the limit of {MaxFileSize / (1024 * 1024)} MB.");
+                        return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"File size exceeds the limit of {maxFileSize / (1024 * 1024)} MB.");
                     }
                     Trace.TraceInformation($"File {originalFileName} passed type and size validation.");
 
-                    // Define OpenPose executable path (placeholder)
-                    string openPoseExePath = ConfigurationManager.AppSettings["OpenPoseExePath"] ?? @"C:\Program Files\openpose\bin\OpenPoseDemo.exe"; // Adjusted path
-
-                    // Define output directory for JSON files
+                    // Define output directory for JSON files (OpenPoseExePath is already read and validated)
                     string jsonOutputDir = HttpContext.Current.Server.MapPath("~/App_Data/json_output");
                     Directory.CreateDirectory(jsonOutputDir); // Ensure directory exists
 
