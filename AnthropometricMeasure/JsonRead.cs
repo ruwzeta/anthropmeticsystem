@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics; // Added for Trace
+using System.IO; 
 using System.Linq;
 using System.Web;
 
@@ -12,9 +13,16 @@ namespace AnthropometricMeasure
         
       
 
-        public MeasurementModel LoadJson()
-
+        public MeasurementModel LoadJson(string jsonFilePath) 
         {
+            // Check for file existence
+            if (string.IsNullOrEmpty(jsonFilePath) || !File.Exists(jsonFilePath))
+            {
+                // No TraceError here as it's handled by the controller with a specific response.
+                // Or, if we want to log it here: Trace.TraceError($"File not found at path: {jsonFilePath}");
+                throw new FileNotFoundException("JSON file not found at the specified path.", jsonFilePath);
+            }
+            Trace.TraceInformation($"Attempting to load and parse JSON from: {jsonFilePath}");
 
             double[][] matrixX;
             double[][] matrixW,matrixY;
@@ -26,11 +34,31 @@ namespace AnthropometricMeasure
 
             MeasurementModel realmeasurements = new MeasurementModel();
             
-
-            using (StreamReader r = new StreamReader(@"c:\Users\Ruwindhu\Desktop\openpose-1.3.0-win64-gpu-binaries\output\test sub 5_keypoints.json"))
+            // Using the provided jsonFilePath
+            using (StreamReader r = new StreamReader(jsonFilePath))
             {
                 string json = r.ReadToEnd();
-                List<BodyPoints> items = JsonConvert.DeserializeObject<List<BodyPoints>>(json);
+                List<BodyPoints> items;
+                try
+                {
+                    items = JsonConvert.DeserializeObject<List<BodyPoints>>(json);
+                    if (items != null)
+                    {
+                        Trace.TraceInformation($"Successfully deserialized JSON from {jsonFilePath}. Found {items.Count} 'people' entries (expected 1 for this workflow).");
+                    }
+                    else
+                    {
+                        // This case might indicate empty array or null, which could be an issue.
+                        Trace.TraceWarning($"JSON deserialized to null or empty list from {jsonFilePath}.");
+                        // Depending on requirements, might need to throw here or handle as no people found.
+                        // For now, let it proceed and potentially fail later if items.Count is critical.
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    Trace.TraceError($"Error deserializing JSON from {jsonFilePath}: {ex.ToString()}");
+                    throw; // Re-throw to be caught by the controller
+                }
 
 
                 BodyDistances bodyDistances = new BodyDistances();
@@ -92,7 +120,7 @@ namespace AnthropometricMeasure
                     realmeasurements.kneetoToeLength = matrixY[7][1];
 
                 }
-
+                Trace.TraceInformation($"Successfully processed measurements from JSON file: {jsonFilePath}");
                 return realmeasurements;
 
             }
